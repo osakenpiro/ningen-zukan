@@ -31,12 +31,13 @@ const IMG = "https://osakenpiro.github.io/ningen-zukan/cards";
 const EDITIONS = {
   smartphone:{id:"smartphone",name:"スマホ撮影編",artStyle:"浮世絵",icon:"\u{1F4F1}",subtitle:"ふとした時に、人間性が垣間見える",ready:true,bg:"linear-gradient(180deg,#faf6ee,#f0e8d8)",accent:"#2c1810",sub:"#7a6955",border:"#d4c5a9",packBg:"linear-gradient(135deg,#2c1810,#4a2820,#2c1810)",packAcc:"#c9a800"},
   train:{id:"train",name:"電車内編",artStyle:"昭和レトロポスター",icon:"\u{1F683}",subtitle:"乗ったら最後、観察が止まらない",ready:true,bg:"linear-gradient(180deg,#fef9f0,#f5e6d0)",accent:"#8b4513",sub:"#a0825a",border:"#d4b896",packBg:"linear-gradient(135deg,#8b4513,#a0522d,#8b4513)",packAcc:"#e8a435"},
-  cafe:{id:"cafe",name:"カフェ編",artStyle:"水彩スケッチ",icon:"\u2615",subtitle:"一杯のコーヒーに、人間模様が溶けている",ready:false,bg:"linear-gradient(180deg,#faf8f5,#f0ebe3)",accent:"#5b4a3f",sub:"#8a7b6b",border:"#d6cbc0",packBg:"linear-gradient(135deg,#5b4a3f,#7a6555,#5b4a3f)",packAcc:"#b8956a"},
+  cafe:{id:"cafe",name:"カフェ編",artStyle:"水彩スケッチ",icon:"\u2615",subtitle:"一杯のコーヒーに、人間模様が溶けている",ready:true,bg:"linear-gradient(180deg,#faf8f5,#f0ebe3)",accent:"#5b4a3f",sub:"#8a7b6b",border:"#d6cbc0",packBg:"linear-gradient(135deg,#5b4a3f,#7a6555,#5b4a3f)",packAcc:"#b8956a"},
   meeting:{id:"meeting",name:"会議室編",artStyle:"風刺画",icon:"\u{1F3E2}",subtitle:"密室に集えば、人間の本質が露わになる",ready:false,bg:"linear-gradient(180deg,#f5f5f8,#e8e8ef)",accent:"#2d3142",sub:"#6b6e7f",border:"#c5c7d3",packBg:"linear-gradient(135deg,#2d3142,#3d4155,#2d3142)",packAcc:"#7b8cde"}
 };
 const ALL_CARDS = {
   smartphone:[{id:"s-girl",name:"ギャル流",r:3},{id:"s-gunman",name:"ガンマン流",r:2},{id:"s-samurai",name:"侍流",r:5},{id:"s-tea",name:"茶人流",r:3},{id:"s-mirror",name:"鏡自撮り師",r:1},{id:"s-ultra",name:"ウルトラマン",r:3},{id:"s-torch",name:"聖火ランナー",r:1},{id:"s-gaijin",name:"外人ニキ",r:5},{id:"s-food",name:"料理審判",r:2},{id:"s-angle",name:"斜め45度の貴族",r:2},{id:"s-evidence",name:"証拠保全官",r:1},{id:"s-nature",name:"花鳥風月おじさん",r:1},{id:"s-buddha",name:"寝釈迦",r:4},{id:"s-ninja",name:"忍",r:4},{id:"s-general",name:"大将",r:4}],
-  train:[{id:"t-gate",name:"門番キープ",r:2},{id:"t-wrong",name:"開く扉間違え",r:1},{id:"t-button",name:"開く扉ボタン式",r:3},{id:"t-bag",name:"かばん挟まれ",r:2},{id:"t-muscle",name:"つりかわ筋トレおじさん",r:4},{id:"t-hot",name:"暑い冬",r:2},{id:"t-large",name:"Lサイズ専用車両",r:4},{id:"t-kfc",name:"ケンタッキーテロリスト",r:5}]
+  train:[{id:"t-gate",name:"門番キープ",r:2},{id:"t-wrong",name:"開く扉間違え",r:1},{id:"t-button",name:"開く扉ボタン式",r:3},{id:"t-bag",name:"かばん挟まれ",r:2},{id:"t-muscle",name:"つりかわ筋トレおじさん",r:4},{id:"t-hot",name:"暑い冬",r:2},{id:"t-large",name:"Lサイズ専用車両",r:4},{id:"t-kfc",name:"ケンタッキーテロリスト",r:5}],
+  cafe:[{id:"c-fancy",name:"おしゃれすぎてえらべなーい",r:2},{id:"c-review",name:"口コミは信用ならん",r:3},{id:"c-window",name:"外から見られる席に美女を",r:4},{id:"c-paradox",name:"ゆっくりしたいがすぐ食べたい",r:1},{id:"c-laptop",name:"パソコンかたかた",r:2},{id:"c-busy",name:"バイトいそがしそう",r:3},{id:"c-pay",name:"先会計なのか後会計なのか",r:1},{id:"c-tray",name:"お盆は下げるのか下げないのか",r:1}]
 };
 const RL={1:"並",2:"上",3:"良",4:"極",5:"伝説"};
 const RG={1:"none",2:"none",3:"0 0 12px #2e509044",4:"0 0 16px #8b225288",5:"0 0 24px #c9a800aa,0 0 48px #c9a80044"};

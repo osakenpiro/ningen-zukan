@@ -1,1 +1,189 @@
-<!DOCTYPE html><html><head><meta charset="utf-8"><title>人間図鑑</title></head><body><h1>人間図鑑</h1><p>Card assets served from this repo.</p></body></html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>人間図鑑 — 観察蒐集帖</title>
+<meta property="og:title" content="人間図鑑 — 観察蒐集帖">
+<meta property="og:description" content="ふとした時に、人間性が垣間見える。1日1パック3枚、人間を集めよう。">
+<meta property="og:url" content="https://osakenpiro.github.io/ningen-zukan/">
+<meta property="og:type" content="website">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;margin:0;padding:0}
+body{font-family:'Noto Serif JP','Hiragino Mincho ProN',serif;background:#f8f5f0;min-height:100vh}
+@keyframes cardReveal{0%{opacity:0;transform:rotateY(90deg) scale(.8)}50%{opacity:1;transform:rotateY(-5deg) scale(1.05)}100%{transform:rotateY(0) scale(1)}}
+@keyframes pulse{0%,100%{opacity:.4;transform:translateY(0)}50%{opacity:1;transform:translateY(4px)}}
+@keyframes slideDown{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:translateY(0)}}
+img{max-width:100%;display:block}
+button{font-family:inherit}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script>
+const{useState,useEffect,createElement:h}=React;
+const IMG="https://osakenpiro.github.io/ningen-zukan/cards";
+const EDITIONS={
+smartphone:{id:"smartphone",name:"スマホ撮影編",artStyle:"浮世絵",icon:"📱",subtitle:"ふとした時に、人間性が垣間見える",ready:true,bg:"linear-gradient(180deg,#faf6ee,#f0e8d8)",accent:"#2c1810",sub:"#7a6955",border:"#d4c5a9",packBg:"linear-gradient(135deg,#2c1810,#4a2820,#2c1810)",packAcc:"#c9a800",font:"'Noto Serif JP',serif"},
+train:{id:"train",name:"電車内編",artStyle:"昭和レトロポスター",icon:"🚃",subtitle:"乗ったら最後、観察が止まらない",ready:true,bg:"linear-gradient(180deg,#fef9f0,#f5e6d0)",accent:"#8b4513",sub:"#a0825a",border:"#d4b896",packBg:"linear-gradient(135deg,#8b4513,#a0522d,#8b4513)",packAcc:"#e8a435",font:"'Noto Serif JP',serif"},
+cafe:{id:"cafe",name:"カフェ編",artStyle:"水彩スケッチ",icon:"☕",subtitle:"一杯のコーヒーに、人間模様が溶けている",ready:false,bg:"linear-gradient(180deg,#faf8f5,#f0ebe3)",accent:"#5b4a3f",sub:"#8a7b6b",border:"#d6cbc0",packBg:"linear-gradient(135deg,#5b4a3f,#7a6555,#5b4a3f)",packAcc:"#b8956a",font:"'Noto Serif JP',serif"},
+meeting:{id:"meeting",name:"会議室編",artStyle:"風刺画",icon:"🏢",subtitle:"密室に集えば、人間の本質が露わになる",ready:false,bg:"linear-gradient(180deg,#f5f5f8,#e8e8ef)",accent:"#2d3142",sub:"#6b6e7f",border:"#c5c7d3",packBg:"linear-gradient(135deg,#2d3142,#3d4155,#2d3142)",packAcc:"#7b8cde",font:"'Noto Serif JP',serif"}
+};
+const CARDS={
+smartphone:[
+{id:"s-girl",name:"ギャル流",rarity:3},{id:"s-gunman",name:"ガンマン流",rarity:2},
+{id:"s-samurai",name:"侍流",rarity:5},{id:"s-tea",name:"茶人流",rarity:3},
+{id:"s-mirror",name:"鏡自撮り師",rarity:1},{id:"s-ultra",name:"ウルトラマン",rarity:3},
+{id:"s-torch",name:"聖火ランナー",rarity:1},{id:"s-gaijin",name:"外人ニキ",rarity:5},
+{id:"s-food",name:"料理審判",rarity:2},{id:"s-angle",name:"斜め45度の貴族",rarity:2},
+{id:"s-evidence",name:"証拠保全官",rarity:1},{id:"s-nature",name:"花鳥風月おじさん",rarity:1},
+{id:"s-buddha",name:"寝釈迦",rarity:4},{id:"s-ninja",name:"忍",rarity:4},
+{id:"s-general",name:"大将",rarity:4}
+],
+train:[
+{id:"t-gate",name:"門番キープ",rarity:2},{id:"t-wrong",name:"開く扉間違え",rarity:1},
+{id:"t-button",name:"開く扉ボタン式",rarity:3},{id:"t-bag",name:"かばん挟まれ",rarity:2},
+{id:"t-muscle",name:"つりかわ筋トレおじさん",rarity:4},{id:"t-hot",name:"暑い冬",rarity:2},
+{id:"t-large",name:"Lサイズ専用車両",rarity:4},{id:"t-kfc",name:"ケンタッキーテロリスト",rarity:5}
+]
+};
+const RL={1:"並",2:"上",3:"良",4:"極",5:"伝説"};
+const RG={1:"none",2:"none",3:"0 0 12px #2e509044",4:"0 0 16px #8b225288",5:"0 0 24px #c9a800aa,0 0 48px #c9a80044"};
+const STORAGE_KEY="ningen-zukan-data";
+const load=()=>{try{return JSON.parse(localStorage.getItem(STORAGE_KEY)||'{}')}catch{return{}}};
+const save=d=>localStorage.setItem(STORAGE_KEY,JSON.stringify(d));
+function imgUrl(id){const p=id.split("-")[0];const m={s:"smartphone",t:"train",c:"cafe",m:"meeting"};return IMG+"/"+(m[p]||"smartphone")+"/"+id+".png"}
+function wr(cards){const w=cards.map(c=>c.rarity===5?2:c.rarity===4?5:c.rarity===3?12:c.rarity===2?20:30);const t=w.reduce((a,b)=>a+b,0);let r=Math.random()*t;for(let i=0;i<w.length;i++){r-=w[i];if(r<=0)return cards[i]}return cards[cards.length-1]}
+function dp(cards){const p=[],ids=new Set();while(p.length<3){const c=wr(cards);if(!ids.has(c.id)){ids.add(c.id);p.push(c)}}return p}
+function today(){return new Date().toISOString().split("T")[0]}
+
+function App(){
+const[data,setData]=useState(()=>load());
+const[edId,setEdId]=useState(null);
+const[pack,setPack]=useState(null);
+const[rev,setRev]=useState(0);
+const[view,setView]=useState("editions");
+const[sel,setSel]=useState(null);
+
+const ed=edId?EDITIONS[edId]:EDITIONS.smartphone;
+const cards=CARDS[edId]||[];
+const col=(data.collections||{})[edId]||{};
+const lastDate=(data.dates||{})[edId]||null;
+const cc=Object.keys(col).length,tc=cards.length;
+const canDraw=()=>lastDate!==today();
+
+const goEd=id=>{if(!EDITIONS[id].ready)return;setEdId(id);setView("home");setPack(null);setSel(null);setRev(0)};
+const startDraw=()=>{setPack(dp(cards));setRev(0);setView("opening")};
+const reveal=()=>{
+const n=rev+1;setRev(n);
+if(n===3){
+const nc={...col};pack.forEach(c=>nc[c.id]=(nc[c.id]||0)+1);
+const nd={...data,collections:{...(data.collections||{}),[edId]:nc},dates:{...(data.dates||{}),[edId]:today()}};
+setData(nd);save(nd);
+}};
+
+const s=(styles)=>styles;
+
+// Edition select
+if(view==="editions")return h("div",{style:s({padding:"40px 16px",maxWidth:600,margin:"0 auto",animation:"slideDown .4s ease-out",minHeight:"100vh",background:"linear-gradient(180deg,#f8f5f0,#ece6dc)"})},
+h("div",{style:{textAlign:"center",marginBottom:32}},
+h("div",{style:{fontSize:11,color:"#8a7a6a",letterSpacing:4,marginBottom:4}},"─── 観察蒐集帖 ───"),
+h("h1",{style:{fontSize:32,fontWeight:900,letterSpacing:8,margin:"4px 0",color:"#2c1810"}},"人間図鑑"),
+h("div",{style:{fontSize:11,color:"#a89880",marginTop:4}},"編を選んでください")),
+h("div",{style:{display:"flex",flexDirection:"column",gap:12}},
+Object.values(EDITIONS).map(e=>{
+const eC=(data.collections||{})[e.id]||{};const eCards=CARDS[e.id]||[];
+const eCc=Object.keys(eC).length,eTc=eCards.length;
+return h("button",{key:e.id,onClick:()=>goEd(e.id),
+onMouseEnter:x=>{if(e.ready)x.currentTarget.style.transform="scale(1.02)"},
+onMouseLeave:x=>{x.currentTarget.style.transform="scale(1)"},
+style:{background:e.packBg,border:"2px solid "+(e.ready?e.packAcc:e.packAcc+"44"),borderRadius:12,padding:"20px 24px",cursor:e.ready?"pointer":"default",textAlign:"left",display:"flex",alignItems:"center",gap:16,transition:"transform .15s",boxShadow:"0 3px 15px "+e.packAcc+"33",opacity:e.ready?1:.5}},
+h("div",{style:{fontSize:36,flexShrink:0}},e.icon),
+h("div",{style:{flex:1}},
+h("div",{style:{color:e.packAcc,fontSize:18,fontWeight:700,letterSpacing:3}},e.name,!e.ready&&h("span",{style:{fontSize:10,marginLeft:8,opacity:.6}},"準備中")),
+h("div",{style:{color:e.packAcc+"88",fontSize:11,marginTop:2}},e.artStyle+"　─　"+e.subtitle),
+e.ready&&h("div",{style:{marginTop:8,display:"flex",alignItems:"center",gap:8}},
+h("div",{style:{flex:1,height:6,background:e.packAcc+"33",borderRadius:3,overflow:"hidden"}},
+h("div",{style:{width:(eTc?(eCc/eTc*100):0)+"%",height:"100%",background:e.packAcc,borderRadius:3,transition:"width .5s"}})),
+h("div",{style:{color:e.packAcc+"99",fontSize:10,flexShrink:0}},eCc+"/"+eTc)))))})));
+
+// Inner views
+return h("div",{style:{minHeight:"100vh",background:ed.bg,fontFamily:ed.font,color:ed.accent}},
+// Header
+h("div",{style:{textAlign:"center",padding:"24px 16px 12px",borderBottom:"1px solid "+ed.border}},
+h("button",{onClick:()=>{setView("editions");setEdId(null)},style:{background:"none",border:"none",fontSize:12,color:ed.sub,cursor:"pointer",letterSpacing:2,display:"block",margin:"0 auto 8px"}},"← 編を選ぶ"),
+h("h1",{style:{fontSize:24,fontWeight:900,letterSpacing:4,margin:"2px 0"}},ed.icon+" "+ed.name),
+h("div",{style:{fontSize:10,color:ed.sub,letterSpacing:2}},ed.artStyle),
+h("div",{style:{display:"flex",justifyContent:"center",gap:24,marginTop:12}},
+[{k:"home",l:"開封",i:"📜"},{k:"collection",l:"図鑑",i:"📖"}].map(t=>
+h("button",{key:t.k,onClick:()=>{setView(t.k);setSel(null)},style:{background:"none",border:"none",borderBottom:(view===t.k||(view==="opening"&&t.k==="home"))?"2px solid "+ed.accent:"2px solid transparent",padding:"6px 4px",fontSize:13,color:(view===t.k||(view==="opening"&&t.k==="home"))?ed.accent:"#a89880",cursor:"pointer",letterSpacing:2,fontWeight:view===t.k?700:400}},t.i+" "+t.l)))),
+
+h("div",{style:{padding:"20px 16px",maxWidth:960,margin:"0 auto"}},
+
+// HOME
+view==="home"&&!pack&&h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:20,animation:"slideDown .4s ease-out"}},
+h("div",{style:{fontSize:13,color:ed.sub}},cc+"/"+tc+" 種蒐集"),
+h("div",{style:{width:"80%",maxWidth:300,height:8,background:"#e0d5c5",borderRadius:4,overflow:"hidden"}},
+h("div",{style:{width:(tc?(cc/tc*100):0)+"%",height:"100%",background:"linear-gradient(90deg,"+ed.packAcc+","+ed.packAcc+"cc)",borderRadius:4,transition:"width .5s"}})),
+canDraw()?
+h("button",{onClick:startDraw,onMouseEnter:e=>e.currentTarget.style.transform="scale(1.05)",onMouseLeave:e=>e.currentTarget.style.transform="scale(1)",style:{background:ed.packBg,color:ed.packAcc,border:"2px solid "+ed.packAcc,borderRadius:8,padding:"14px 40px",fontSize:16,fontWeight:700,letterSpacing:3,cursor:"pointer",boxShadow:"0 4px 20px rgba(0,0,0,.2)",transition:"transform .15s"}},ed.icon+" 本日の巻物を開く"):
+h("div",{style:{textAlign:"center",color:"#8a7a6a",fontSize:14,padding:20,border:"1px dashed "+ed.border,borderRadius:8,maxWidth:320}},
+h("div",{style:{fontSize:36,marginBottom:8}},"🌙"),
+h("div",null,"本日の巻物は開封済み"),
+h("div",{style:{fontSize:11,marginTop:4}},"次の巻物は明日届きます"))),
+
+// OPENING
+view==="opening"&&pack&&h("div",{style:{animation:"slideDown .4s ease-out"}},
+h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:16}},
+h("div",{style:{fontSize:14,color:ed.sub}},"タップして開封（"+rev+"/3）"),
+h("div",{style:{display:"flex",gap:12,flexWrap:"wrap",justifyContent:"center"}},
+pack.map((card,i)=>h("div",{key:card.id},
+i<rev?
+h("div",{style:{animation:"cardReveal .6s ease-out",width:280,borderRadius:8,overflow:"hidden",boxShadow:RG[card.rarity]}},
+h("img",{src:imgUrl(card.id),alt:card.name,style:{width:"100%",borderRadius:8},loading:"lazy"})):
+i===rev?
+h("div",{onClick:reveal,onMouseEnter:e=>e.currentTarget.style.transform="scale(1.03)",onMouseLeave:e=>e.currentTarget.style.transform="scale(1)",style:{width:280,height:420,background:ed.packBg,border:"3px solid "+ed.packAcc,borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",cursor:"pointer",position:"relative",overflow:"hidden",transition:"transform .15s",boxShadow:"0 4px 20px "+ed.packAcc+"44"}},
+h("div",{style:{position:"absolute",inset:8,border:"1px solid "+ed.packAcc+"44",borderRadius:4}}),
+h("div",{style:{fontSize:48,marginBottom:12}},ed.icon),
+h("div",{style:{color:ed.packAcc,fontSize:16,fontWeight:700,letterSpacing:4}},"人間図鑑"),
+h("div",{style:{color:ed.packAcc+"99",fontSize:11,marginTop:4,letterSpacing:2}},ed.name),
+h("div",{style:{color:ed.packAcc+"66",fontSize:24,marginTop:16,animation:"pulse 2s infinite"}},"▼")):
+h("div",{style:{width:280,height:420,background:ed.packBg,border:"3px solid "+ed.packAcc+"66",borderRadius:8,display:"flex",alignItems:"center",justifyContent:"center",opacity:.5}},
+h("div",{style:{fontSize:36}},ed.icon)))))),
+rev===3&&h("div",{style:{textAlign:"center",marginTop:24,animation:"slideDown .5s ease-out .3s both"}},
+h("button",{onClick:()=>{setPack(null);setView("home")},style:{background:"none",border:"1px solid "+ed.border,borderRadius:6,padding:"10px 32px",fontSize:13,color:ed.sub,cursor:"pointer",letterSpacing:2}},"蒐集帖に戻る"))),
+
+// COLLECTION
+view==="collection"&&!sel&&h("div",{style:{animation:"slideDown .4s ease-out"}},
+h("div",{style:{textAlign:"center",fontSize:13,color:ed.sub,marginBottom:20}},
+cc+"/"+tc+" 種蒐集"+(cc===tc&&cc>0?" 🎉 全種蒐集達成！":"")),
+h("div",{style:{display:"grid",gridTemplateColumns:"repeat(auto-fill,minmax(130px,1fr))",gap:10,justifyItems:"center"}},
+cards.map(card=>{const o=col[card.id]||0;
+return o>0?
+h("div",{key:card.id,style:{position:"relative",cursor:"pointer"},onClick:()=>setSel(card)},
+h("div",{style:{width:130,borderRadius:6,overflow:"hidden",boxShadow:RG[card.rarity],transition:"transform .2s"},onMouseEnter:e=>e.currentTarget.style.transform="scale(1.05)",onMouseLeave:e=>e.currentTarget.style.transform="scale(1)"},
+h("img",{src:imgUrl(card.id),alt:card.name,style:{width:"100%"},loading:"lazy"})),
+o>1&&h("div",{style:{position:"absolute",top:-4,right:-4,background:"#2c1810",color:"#c9a800",fontSize:10,fontWeight:700,borderRadius:"50%",width:22,height:22,display:"flex",alignItems:"center",justifyContent:"center",border:"1px solid #c9a800"}},"×"+o)):
+h("div",{key:card.id,style:{width:130,aspectRatio:"2/3",background:"#e8e0d4",border:"2px solid "+ed.border,borderRadius:8,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",opacity:.5}},
+h("div",{style:{fontSize:28,marginBottom:4}},"❓"),
+h("div",{style:{fontSize:10,color:"#a89880"}},"未発見"))}))),
+
+// DETAIL
+view==="collection"&&sel&&h("div",{style:{display:"flex",flexDirection:"column",alignItems:"center",gap:16,animation:"cardReveal .5s ease-out"}},
+h("button",{onClick:()=>setSel(null),style:{background:"none",border:"none",fontSize:13,color:ed.sub,cursor:"pointer",letterSpacing:2}},"← 図鑑に戻る"),
+h("div",{style:{width:280,borderRadius:8,overflow:"hidden",boxShadow:RG[sel.rarity]}},
+h("img",{src:imgUrl(sel.id),alt:sel.name,style:{width:"100%"},loading:"lazy"})),
+h("div",{style:{display:"flex",gap:12,alignItems:"center",fontSize:12,color:"#8a7a6a"}},
+h("span",null,"所持数："+(col[sel.id]||0)+"枚"),
+h("span",null,"│"),
+h("span",null,RL[sel.rarity]+"（"+"★".repeat(sel.rarity)+"☆".repeat(5-sel.rarity)+"）")))
+));
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
